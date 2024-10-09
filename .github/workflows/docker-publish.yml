@@ -107,4 +107,5 @@ jobs:
           registryUrl: ${{ env.REGISTRY }}
           registryUsername: ${{ github.actor }}
           registryPassword: ${{ secrets.GITHUB_TOKEN }}
+          resourceGroup: album-containerapps
           containerAppEnvironment: env-album-containerapps
