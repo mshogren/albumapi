@@ -1,8 +1,12 @@
-param appName string = 'album-api-test'
-param dbName string = 'album-db-test'
-param envName string = 'env-album-containerapps-test'
-param logWorkspaceName string = 'workspace-albumcontainerapps-test'
+param rgName string = resourceGroup().name
 param location string = resourceGroup().location
+var appName = 'album-api-${rgName}'
+var dbAccountName = 'db-${rgName}'
+var dbName = 'main'
+var dbContainerName = 'albums'
+var envName = 'env-${rgName}'
+var logWorkspaceName = 'workspace-${rgName}'
+var connectorName = 'linker-${dbAccountName}-${dbName}'
 
 resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: logWorkspaceName 
@@ -10,7 +14,7 @@ resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
 }
 
 resource dbaccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
-  name: dbName
+  name: dbAccountName
   location: location
   kind: 'GlobalDocumentDB'
   properties: {
@@ -25,21 +29,21 @@ resource dbaccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
 }
 
 resource db 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-05-15' = {
-  name: 'main'
+  name: dbName
   parent: dbaccount
   properties: {
     resource: {
-      id: 'main'
+      id: dbName
     }
   }
 }
 
 resource dbcontainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
-  name: 'albums'
+  name: dbContainerName
   parent: db
   properties: {
     resource: {
-      id: 'albums'
+      id: dbContainerName
       partitionKey: {
         paths: [
           '/id'
@@ -86,7 +90,7 @@ resource containerapp 'Microsoft.App/containerApps@2024-03-01' = {
 }
 
 resource serviceConnector 'Microsoft.ServiceLinker/linkers@2024-07-01-preview' = {
-  name: 'appdb'
+  name: connectorName
   scope: containerapp
   properties: {
     clientType: 'dotnet'
